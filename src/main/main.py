@@ -1,11 +1,19 @@
-from pyspark.sql import Row
-from pyspark.sql.functions import col, concat_ws, lit
+"""
+This code piece contains the main entry point of the Application.
+It consolidates the data from all modules, executes and saves the final output.
+"""
+
+import sys
+import os
+ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), '..\\..'))
+sys.path.append(ROOT_DIR)
+print(sys.path)
 
 from utilities.spark import start_spark_session
 from src.main.extractor.extract import extract_data
-import os
-from config.definitions import ROOT_DIR
-print(ROOT_DIR)
+from src.main.transformer.transform import transform_data
+# from config.definitions import ROOT_DIR
+
 
 def main():
     """Main ETL script definition.
@@ -23,16 +31,15 @@ def main():
     # start ETL Pipeline
     # Extract data
     input_df = extract_data(spark)
-    input_df.show(10)
-    input_df.printSchema()
+    input_df.persist()
+    # input_df.show(10)
+    # input_df.printSchema()
+    # print(f"count : {input_df.count()}")
 
 
-    df2 = input_df.filter(input_df.lower(col('ingredients')).contains("beef"))
-    df2.select("ingredients").show(10,truncate=False)
-
-
-
-    print(f"count : {input_df.count()}")
+    df2 = transform_data(input_df)
+    df2.show(20)
+    print(f"df2 count : {df2.count()}")
 
 
 # entry point for PySpark ETL application
